@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FotoText - Extract Text from Images</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f13;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      border-bottom: 1px solid #1e1e2a;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    header h1 span { color: #7c6ff7; }
+
+    header p {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    main {
+      width: 100%;
+      max-width: 900px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .drop-zone {
+      border: 2px dashed #333;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #16161e;
+      position: relative;
+      outline: none;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #7c6ff7;
+      background: #1a1a28;
+    }
+
+    .drop-zone.has-image {
+      padding: 1rem;
+    }
+
+    .drop-zone input { display: none; }
+
+    .drop-zone .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .drop-zone .placeholder .icon {
+      font-size: 3rem;
+      opacity: 0.5;
+    }
+
+    .drop-zone .placeholder p { color: #888; }
+
+    .drop-zone .placeholder .hint {
+      font-size: 0.8rem;
+      color: #555;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .cropper-container {
+      max-height: 500px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .crop-wrapper {
+      display: none;
+      position: relative;
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .crop-wrapper.active {
+      display: block;
+    }
+
+    .crop-wrapper img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #7c6ff7;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #6a5ce0; }
+
+    .btn-primary:disabled {
+      background: #444;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #222;
+      color: #ccc;
+      border: 1px solid #333;
+    }
+
+    .btn-secondary:hover { background: #2a2a2a; }
+
+    .btn-secondary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-crop {
+      background: #1a8a4a;
+      color: #fff;
+    }
+
+    .btn-crop:hover { background: #167a40; }
+
+    .btn-crop:disabled {
+      background: #444;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    .btn-translate-main {
+      background: #e67e22;
+      color: #fff;
+    }
+
+    .btn-translate-main:hover { background: #d35400; }
+
+    .btn-translate-main:disabled {
+      background: #444;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #222;
+      border-radius: 3px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      background: #7c6ff7;
+      width: 0%;
+      transition: width 0.3s;
+      border-radius: 3px;
+    }
+
+    .progress-label {
+      font-size: 0.85rem;
+      color: #888;
+      min-height: 1.2rem;
+    }
+
+    .output-area {
+      display: none;
+    }
+
+    .output-area h2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+      color: #aaa;
+    }
+
+    .text-box {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      background: #16161e;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #7c6ff7;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      background: #2a2a3a;
+      color: #ccc;
+      border: 1px solid #3a3a4a;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover { background: #3a3a4a; }
+    .copy-btn.copied { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+
+    .translate-section {
+      display: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #222;
+    }
+
+    .translate-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .translate-row label {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .translate-row select {
+      padding: 0.5rem 0.75rem;
+      background: #16161e;
+      border: 1px solid #2a2a3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .translate-row select:focus {
+      outline: none;
+      border-color: #7c6ff7;
+    }
+
+    .btn-translate {
+      background: #e67e22;
+      color: #fff;
+    }
+
+    .btn-translate:hover { background: #d35400; }
+
+    .btn-translate:disabled {
+      background: #444;
+      color: #777;
+      cursor: not-allowed;
+    }
+
+    .translated-box {
+      position: relative;
+    }
+
+    .translated-box textarea {
+      border-color: #7a5a30;
+    }
+
+    .translated-box textarea:focus {
+      border-color: #e67e22;
+    }
+
+    .translate-error {
+      font-size: 0.85rem;
+      color: #e74c3c;
+      margin-top: 0.5rem;
+    }
+
+    .crop-hint {
+      display: none;
+      font-size: 0.85rem;
+      color: #7c6ff7;
+      text-align: center;
+    }
+
+    .crop-hint.active {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      .drop-zone { padding: 2rem 1rem; }
+      header h1 { font-size: 1.4rem; }
+    }
+
+    .ocr-options {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .ocr-options label {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .ocr-options select {
+      padding: 0.5rem 0.75rem;
+      background: #16161e;
+      border: 1px solid #2a2a3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .ocr-options select:focus {
+      outline: none;
+      border-color: #7c6ff7;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #7c6ff7;
+      cursor: pointer;
+    }
+
+    .toggle-row label {
+      font-size: 0.9rem;
+      color: #ccc;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Foto<span>Text</span></h1>
+    <p>Upload or paste an image, crop, and extract its text</p>
+  </header>
+
+  <main>
+    <div class="drop-zone" id="dropZone" tabindex="0">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="placeholder" id="placeholder">
+        <div class="icon">&#128247;</div>
+        <p>Drop an image here or click to upload</p>
+        <span class="hint">You can also paste (Ctrl+V) from clipboard</span>
+      </div>
+      <img class="preview-img" id="previewImg" alt="Preview">
+      <div class="crop-wrapper" id="cropWrapper">
+        <img id="cropImg" alt="Crop">
+      </div>
+    </div>
+
+    <div class="crop-hint" id="cropHint">Drag to select the area you want to extract text from</div>
+
+    <div class="controls">
+      <button class="btn-primary" id="extractBtn" disabled>&#128196; Extract Text</button>
+      <button class="btn-crop" id="cropBtn" disabled>&#9975; Crop &amp; Extract</button>
+      <button class="btn-secondary" id="resetCropBtn" disabled>&#8634; Reset Crop</button>
+      <button class="btn-translate-main" id="translateMainBtn" disabled>&#127760; TRANSLATE</button>
+      <button class="btn-secondary" id="pasteBtn">&#128203; Paste Image</button>
+      <button class="btn-secondary" id="clearBtn">&#128465; Clear</button>
+    </div>
+
+    <div class="ocr-options">
+      <label for="ocrLang">OCR Language:</label>
+      <select id="ocrLang">
+        <option value="eng">English</option>
+        <option value="eng+chi_sim">English + Chinese (Simplified)</option>
+        <option value="eng+chi_tra">English + Chinese (Traditional)</option>
+        <option value="eng+jpn">English + Japanese</option>
+        <option value="eng+kor">English + Korean</option>
+        <option value="eng+ara">English + Arabic</option>
+        <option value="eng+hin">English + Hindi</option>
+        <option value="eng+rus">English + Russian</option>
+        <option value="eng+deu">English + German</option>
+        <option value="eng+fra">English + French</option>
+        <option value="eng+spa">English + Spanish</option>
+        <option value="eng+por">English + Portuguese</option>
+        <option value="chi_sim">Chinese (Simplified)</option>
+        <option value="chi_tra">Chinese (Traditional)</option>
+        <option value="jpn">Japanese</option>
+        <option value="kor">Korean</option>
+        <option value="ara">Arabic</option>
+        <option value="hin">Hindi</option>
+        <option value="rus">Russian</option>
+        <option value="deu">German</option>
+        <option value="fra">French</option>
+        <option value="spa">Spanish</option>
+        <option value="por">Portuguese</option>
+        <option value="ita">Italian</option>
+      </select>
+      <div class="toggle-row">
+        <input type="checkbox" id="symbolsCheck" checked>
+        <label for="symbolsCheck">Detect Symbols &amp; Special Chars</label>
+      </div>
+      <div class="toggle-row">
+        <input type="checkbox" id="handwritingCheck">
+        <label for="handwritingCheck">Handwriting Mode</label>
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressLabel"></div>
+
+    <div class="output-area" id="outputArea">
+      <h2>Extracted Text</h2>
+      <div class="text-box">
+        <textarea id="outputText" placeholder="Extracted text will appear here..."></textarea>
+        <button class="copy-btn" id="copyBtn">Copy</button>
+      </div>
+
+      <div class="translate-section" id="translateSection">
+        <div class="translate-row">
+          <label for="langSelect">Translate to:</label>
+          <select id="langSelect">
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+            <option value="nl">Dutch</option>
+            <option value="ru">Russian</option>
+            <option value="zh-CN">Chinese</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="ar">Arabic</option>
+            <option value="hi">Hindi</option>
+            <option value="tr">Turkish</option>
+            <option value="pl">Polish</option>
+            <option value="sv">Swedish</option>
+            <option value="da">Danish</option>
+            <option value="no">Norwegian</option>
+            <option value="fi">Finnish</option>
+            <option value="el">Greek</option>
+            <option value="cs">Czech</option>
+            <option value="ro">Romanian</option>
+            <option value="hu">Hungarian</option>
+            <option value="th">Thai</option>
+            <option value="vi">Vietnamese</option>
+            <option value="id">Indonesian</option>
+          </select>
+          <button class="btn-translate" id="translateBtn">Translate</button>
+        </div>
+        <div class="translated-box text-box">
+          <textarea id="translatedText" placeholder="Translation will appear here..." readonly></textarea>
+          <button class="copy-btn" id="copyTranslatedBtn">Copy</button>
+        </div>
+        <div class="translate-error" id="translateError"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const placeholder = document.getElementById('placeholder');
+    const previewImg = document.getElementById('previewImg');
+    const cropWrapper = document.getElementById('cropWrapper');
+    const cropImg = document.getElementById('cropImg');
+    const extractBtn = document.getElementById('extractBtn');
+    const cropBtn = document.getElementById('cropBtn');
+    const resetCropBtn = document.getElementById('resetCropBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const progressLabel = document.getElementById('progressLabel');
+    const outputArea = document.getElementById('outputArea');
+    const outputText = document.getElementById('outputText');
+    const copyBtn = document.getElementById('copyBtn');
+    const cropHint = document.getElementById('cropHint');
+    const translateSection = document.getElementById('translateSection');
+    const langSelect = document.getElementById('langSelect');
+    const translateBtn = document.getElementById('translateBtn');
+    const translatedText = document.getElementById('translatedText');
+    const copyTranslatedBtn = document.getElementById('copyTranslatedBtn');
+    const translateError = document.getElementById('translateError');
+
+    const translateMainBtn = document.getElementById('translateMainBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const ocrLang = document.getElementById('ocrLang');
+    const symbolsCheck = document.getElementById('symbolsCheck');
+    const handwritingCheck = document.getElementById('handwritingCheck');
+
+    let currentFile = null;
+    let cropper = null;
+    let isCropping = false;
+
+    dropZone.addEventListener('click', (e) => {
+      if (isCropping) return;
+      if (e.target.tagName === 'INPUT') return;
+      fileInput.click();
+    });
+
+    dropZone.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        tryClipboardPaste();
+      }
+    });
+
+    dropZone.addEventListener('focus', () => {
+      dropZone.blur();
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        showImage(file);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) showImage(file);
+    });
+
+    function processClipboardData(cd) {
+      if (!cd) return false;
+      if (cd.items && cd.items.length) {
+        for (let i = 0; i < cd.items.length; i++) {
+          if (cd.items[i].type.startsWith('image/')) {
+            const file = cd.items[i].getAsFile();
+            if (file) { showImage(file); return true; }
+          }
+        }
+      }
+      if (cd.files && cd.files.length) {
+        for (let i = 0; i < cd.files.length; i++) {
+          if (cd.files[i].type.startsWith('image/')) {
+            showImage(cd.files[i]);
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    document.addEventListener('paste', (e) => {
+      const cd = e.clipboardData || window.clipboardData;
+      if (processClipboardData(cd)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    async function tryClipboardPaste() {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        try {
+          const items = await navigator.clipboard.read();
+          for (const item of items) {
+            const imgType = item.types.find(t => t.startsWith('image/'));
+            if (imgType) {
+              const blob = await item.getType(imgType);
+              const ext = imgType.split('/')[1] || 'png';
+              showImage(new File([blob], 'pasted-image.' + ext, { type: imgType }));
+              return;
+            }
+          }
+          alert('No image found on clipboard. Copy an image first.');
+        } catch (err) {
+          alert('Clipboard access denied. Try pressing Ctrl+V instead.\n\nError: ' + err.message);
+        }
+      }
+    }
+
+    pasteBtn.addEventListener('click', async () => {
+      await tryClipboardPaste();
+    });
+
+    function showImage(file) {
+      currentFile = file;
+      exitCropMode();
+      const url = URL.createObjectURL(file);
+      previewImg.src = url;
+      previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      dropZone.classList.add('has-image');
+      extractBtn.disabled = false;
+      cropBtn.disabled = false;
+    }
+
+    cropBtn.addEventListener('click', () => {
+      if (!currentFile) return;
+      if (isCropping) {
+        doCropAndExtract();
+        return;
+      }
+      enterCropMode();
+    });
+
+    resetCropBtn.addEventListener('click', () => {
+      if (isCropping) {
+        exitCropMode();
+        previewImg.style.display = 'block';
+      }
+    });
+
+    function enterCropMode() {
+      if (!currentFile) return;
+      isCropping = true;
+      previewImg.style.display = 'none';
+      cropImg.src = URL.createObjectURL(currentFile);
+      cropWrapper.classList.add('active');
+      cropHint.classList.add('active');
+      dropZone.classList.add('has-image');
+      dropZone.style.cursor = 'default';
+      resetCropBtn.disabled = false;
+
+      cropBtn.textContent = 'Crop & Extract';
+      extractBtn.disabled = true;
+
+      if (cropper) cropper.destroy();
+
+      cropImg.onload = () => {
+        cropper = new Cropper(cropImg, {
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.8,
+          responsive: true,
+          background: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+        });
+      };
+    }
+
+    function doCropAndExtract() {
+      if (!cropper) return;
+      const canvas = cropper.getCroppedCanvas();
+      canvas.toBlob((blob) => {
+        extractTextFromBlob(blob);
+      }, 'image/png');
+    }
+
+    function exitCropMode() {
+      isCropping = false;
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      cropWrapper.classList.remove('active');
+      cropHint.classList.remove('active');
+      cropBtn.textContent = 'Crop & Extract';
+      resetCropBtn.disabled = true;
+      extractBtn.disabled = !currentFile;
+      dropZone.style.cursor = '';
+    }
+
+    function preprocessForHandwriting(blob) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          const contrast = 1.5;
+          const threshold = 180;
+          for (let i = 0; i < data.length; i += 4) {
+            let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            gray = ((gray - 128) * contrast) + 128;
+            gray = Math.max(0, Math.min(255, gray));
+            const val = gray < threshold ? 0 : 255;
+            data[i] = val;
+            data[i + 1] = val;
+            data[i + 2] = val;
+          }
+          ctx.putImageData(imageData, 0, 0);
+          canvas.toBlob((newBlob) => {
+            resolve(newBlob || blob);
+          }, 'image/png');
+        };
+        img.onerror = () => resolve(blob);
+        img.src = URL.createObjectURL(blob);
+      });
+    }
+
+    extractBtn.addEventListener('click', () => {
+      if (!currentFile) return;
+      extractTextFromBlob(currentFile);
+    });
+
+    async function extractTextFromBlob(inputBlob) {
+      let blob = inputBlob;
+      progressBar.style.display = 'block';
+      progressFill.style.width = '0%';
+      progressLabel.textContent = 'Initializing OCR engine...';
+      outputArea.style.display = 'none';
+
+      const activeBtn = isCropping ? cropBtn : extractBtn;
+      activeBtn.disabled = true;
+      activeBtn.textContent = 'Extracting...';
+
+      try {
+        const lang = ocrLang.value;
+        const detectSymbols = symbolsCheck.checked;
+        const isHandwriting = handwritingCheck.checked;
+        progressLabel.textContent = 'Initializing OCR engine...';
+        const tesseractOpts = {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              const pct = Math.round(m.progress * 100);
+              progressFill.style.width = pct + '%';
+              progressLabel.textContent = `Recognizing text... ${pct}%`;
+            } else if (m.status === 'loading language traineddata') {
+              const pct = Math.round(m.progress * 100);
+              progressFill.style.width = pct / 2 + '%';
+              progressLabel.textContent = `Loading language data (${lang})... ${pct}%`;
+            } else {
+              progressLabel.textContent = m.status.charAt(0).toUpperCase() + m.status.slice(1) + '...';
+            }
+          }
+        };
+        if (isHandwriting) {
+          tesseractOpts.tessedit_pageseg_mode = '6';
+          tesseractOpts.tessedit_char_whitelist = '';
+          const processedBlob = await preprocessForHandwriting(blob);
+          blob = processedBlob;
+        } else if (detectSymbols) {
+          tesseractOpts.tessedit_pageseg_mode = '6';
+          tesseractOpts.tessedit_char_whitelist = '';
+        }
+        const result = await Tesseract.recognize(blob, lang, tesseractOpts);
+
+        let extractedText = result.data.text.trim();
+        if (detectSymbols) {
+          extractedText = extractedText
+            .replace(/[\u2018\u2019]/g, "'")
+            .replace(/[\u201C\u201D]/g, '"')
+            .replace(/\u2013/g, '-')
+            .replace(/\u2014/g, '--')
+            .replace(/\u2026/g, '...')
+            .replace(/\u00D7/g, 'x')
+            .replace(/\u2264/g, '<=')
+            .replace(/\u2265/g, '>=')
+            .replace(/\u2260/g, '!=')
+            .replace(/\u221E/g, 'infinity')
+            .replace(/\u00B0/g, ' deg')
+            .replace(/\u00B1/g, '+/-')
+            .replace(/\u00F7/g, '/');
+        }
+
+        outputText.value = extractedText;
+        outputArea.style.display = 'block';
+        translateSection.style.display = 'block';
+        translateMainBtn.disabled = false;
+        progressLabel.textContent = 'Done!';
+        setTimeout(() => {
+          progressBar.style.display = 'none';
+          progressLabel.textContent = '';
+        }, 2000);
+      } catch (err) {
+        progressLabel.textContent = 'Error: ' + err.message;
+        progressFill.style.width = '0%';
+      } finally {
+        activeBtn.disabled = false;
+        if (isCropping) {
+          cropBtn.textContent = 'Crop & Extract';
+        } else {
+          extractBtn.textContent = 'Extract Text';
+        }
+      }
+    }
+
+    translateMainBtn.addEventListener('click', () => {
+      const text = outputText.value.trim();
+      if (!text) return;
+      translateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      translateSection.style.display = 'block';
+      translateBtn.click();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      currentFile = null;
+      fileInput.value = '';
+      exitCropMode();
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+      placeholder.style.display = '';
+      dropZone.classList.remove('has-image');
+      extractBtn.disabled = true;
+      cropBtn.disabled = true;
+      outputArea.style.display = 'none';
+      outputText.value = '';
+      translateSection.style.display = 'none';
+      translatedText.value = '';
+      translateError.textContent = '';
+      translateMainBtn.disabled = true;
+      progressBar.style.display = 'none';
+      progressLabel.textContent = '';
+      progressFill.style.width = '0%';
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(outputText.value);
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      } catch {
+        outputText.select();
+        document.execCommand('copy');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }
+    });
+
+    translateBtn.addEventListener('click', async () => {
+      const text = outputText.value.trim();
+      if (!text) return;
+      const lang = langSelect.value;
+      translateBtn.disabled = true;
+      translateBtn.textContent = 'Translating...';
+      translatedText.value = '';
+      translateError.textContent = '';
+      try {
+        const chunks = [];
+        const maxLen = 500;
+        const lines = text.split('\n');
+        let chunk = '';
+        for (const line of lines) {
+          if ((chunk + '\n' + line).length > maxLen && chunk.length > 0) {
+            chunks.push(chunk);
+            chunk = line;
+          } else {
+            chunk = chunk ? chunk + '\n' + line : line;
+          }
+        }
+        if (chunk) chunks.push(chunk);
+        const results = [];
+        for (const c of chunks) {
+          const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(c)}&langpair=en|${lang}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.responseStatus === 200) {
+            results.push(data.responseData.translatedText);
+          } else {
+            throw new Error(data.responseDetails || 'Translation failed');
+          }
+        }
+        translatedText.value = results.join('\n');
+      } catch (err) {
+        translateError.textContent = 'Translation error: ' + err.message;
+        translatedText.value = '';
+      } finally {
+        translateBtn.disabled = false;
+        translateBtn.textContent = 'Translate';
+      }
+    });
+
+    copyTranslatedBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(translatedText.value);
+        copyTranslatedBtn.textContent = 'Copied!';
+        copyTranslatedBtn.classList.add('copied');
+        setTimeout(() => {
+          copyTranslatedBtn.textContent = 'Copy';
+          copyTranslatedBtn.classList.remove('copied');
+        }, 2000);
+      } catch {
+        translatedText.select();
+        document.execCommand('copy');
+        copyTranslatedBtn.textContent = 'Copied!';
+        copyTranslatedBtn.classList.add('copied');
+        setTimeout(() => {
+          copyTranslatedBtn.textContent = 'Copy';
+          copyTranslatedBtn.classList.remove('copied');
+        }, 2000);
+      }
+    });
+  </script>
+</body>
+</html>
