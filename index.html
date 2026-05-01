@@ -25,6 +25,7 @@
       padding: 1.5rem 2rem;
       text-align: center;
       border-bottom: 1px solid #1e1e2a;
+      position: relative;
     }
 
     header h1 {
@@ -39,6 +40,63 @@
       margin-top: 0.3rem;
       font-size: 0.9rem;
       color: #888;
+    }
+
+    .header-actions {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .auth-btn {
+      padding: 0.4rem 0.9rem;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1a1a24;
+      color: #ccc;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-btn:hover { background: #2a2a3a; border-color: #7c6ff7; }
+    .auth-btn.admin-btn { border-color: #e67e22; color: #e67e22; }
+    .auth-btn.admin-btn:hover { background: #3a2a10; }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .user-info .username {
+      font-size: 0.85rem;
+      color: #7c6ff7;
+      font-weight: 600;
+    }
+
+    .ocr-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .ocr-badge.ai {
+      background: #1a3a1a;
+      color: #4caf50;
+      border: 1px solid #2e7d32;
+    }
+
+    .ocr-badge.basic {
+      background: #3a2a10;
+      color: #e67e22;
+      border: 1px solid #e67e22;
     }
 
     main {
@@ -344,6 +402,7 @@
       main { padding: 1rem; }
       .drop-zone { padding: 2rem 1rem; }
       header h1 { font-size: 1.4rem; }
+      .header-actions { position: static; transform: none; margin-top: 0.5rem; justify-content: center; }
     }
 
     .ocr-options {
@@ -391,6 +450,175 @@
       color: #ccc;
       cursor: pointer;
     }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #1a1a24;
+      border: 1px solid #2a2a3a;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .modal h2 .highlight { color: #7c6ff7; }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 0.3rem;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: #16161e;
+      border: 1px solid #2a2a3a;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #7c6ff7;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .modal-actions button {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-danger {
+      background: #c0392b;
+      color: #fff;
+    }
+
+    .btn-danger:hover { background: #a93226; }
+
+    .btn-success {
+      background: #27ae60;
+      color: #fff;
+    }
+
+    .btn-success:hover { background: #219a52; }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .users-table th, .users-table td {
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #222;
+      font-size: 0.85rem;
+    }
+
+    .users-table th {
+      color: #888;
+      font-weight: 600;
+    }
+
+    .users-table td {
+      color: #ccc;
+    }
+
+    .role-badge {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .role-badge.admin {
+      background: #3a1a1a;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+
+    .role-badge.user {
+      background: #1a1a3a;
+      color: #7c6ff7;
+      border: 1px solid #7c6ff7;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-del {
+      background: #444;
+      color: #e74c3c;
+      border: 1px solid #5a2020;
+    }
+
+    .btn-del:hover { background: #5a2020; }
+
+    .error-msg {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .success-msg {
+      color: #4caf50;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .admin-section {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #222;
+    }
+
+    .admin-section h3 {
+      font-size: 1rem;
+      color: #e67e22;
+      margin-bottom: 0.75rem;
+    }
+
+    .admin-section .form-group input {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .sep { color: #333; margin: 0 0.25rem; }
   </style>
 </head>
 <body>
@@ -398,9 +626,10 @@
   <header>
     <h1>Foto<span>Text</span></h1>
     <p>Upload or paste an image, crop, and extract its text</p>
+    <div class="header-actions" id="headerActions"></div>
   </header>
 
-  <main>
+  <main id="mainContent">
     <div class="drop-zone" id="dropZone" tabindex="0">
       <input type="file" id="fileInput" accept="image/*">
       <div class="placeholder" id="placeholder">
@@ -516,7 +745,333 @@
     </div>
   </main>
 
+  <div class="overlay" id="loginOverlay">
+    <div class="modal">
+      <h2>Log <span class="highlight">In</span></h2>
+      <div class="form-group">
+        <label for="loginUser">Username</label>
+        <input type="text" id="loginUser" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password">
+      </div>
+      <div class="error-msg" id="loginError"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="loginCancel">Cancel</button>
+        <button class="btn-primary" id="loginSubmit">Log In</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="adminOverlay">
+    <div class="modal" style="max-width: 560px;">
+      <h2>Admin <span class="highlight">Panel</span></h2>
+
+      <div id="adminUserList">
+        <table class="users-table">
+          <thead>
+            <tr><th>Username</th><th>Role</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-section">
+        <h3>Add User</h3>
+        <div class="form-group">
+          <label for="newUser">Username</label>
+          <input type="text" id="newUser">
+        </div>
+        <div class="form-group">
+          <label for="newPass">Password</label>
+          <input type="password" id="newPass">
+        </div>
+        <div class="form-group">
+          <label for="newRole">Role</label>
+          <select id="newRole">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="error-msg" id="addUserError"></div>
+        <button class="btn-success btn-sm" id="addUserBtn">Add User</button>
+      </div>
+
+      <div class="admin-section">
+        <h3>AI API Key</h3>
+        <p style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;">Uses Google Gemini AI for text recognition. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#7c6ff7;">aistudio.google.com/apikey</a></p>
+        <div class="form-group">
+          <label for="apiKeyInput">Gemini API Key</label>
+          <input type="text" id="apiKeyInput" placeholder="AIza...">
+        </div>
+        <div class="success-msg" id="apiSavedMsg"></div>
+        <button class="btn-primary btn-sm" id="saveApiKeyBtn">Save Key</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" id="adminClose">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    const USERS_KEY = 'fototext_users';
+    const SESSION_KEY = 'fototext_session';
+    const API_KEY_STORE = 'fototext_gemini_api_key';
+
+    function getUsers() {
+      let users = JSON.parse(localStorage.getItem(USERS_KEY) || 'null');
+      if (!users) {
+        users = [{ username: 'admin', password: 'admin123', role: 'admin' }];
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }
+      return users;
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    function getSession() {
+      return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    }
+
+    function setSession(user) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    function getApiKey() {
+      return localStorage.getItem(API_KEY_STORE) || '';
+    }
+
+    function isAiAvailable() {
+      const session = getSession();
+      return session !== null && getApiKey() !== '';
+    }
+
+    function isAdmin() {
+      const session = getSession();
+      return session && session.role === 'admin';
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function extractWithAI(blob, lang) {
+      const apiKey = getApiKey();
+      const langNames = {
+        'eng': 'English', 'eng+chi_sim': 'English and Simplified Chinese',
+        'eng+chi_tra': 'English and Traditional Chinese', 'eng+jpn': 'English and Japanese',
+        'eng+kor': 'English and Korean', 'eng+ara': 'English and Arabic',
+        'eng+hin': 'English and Hindi', 'eng+rus': 'English and Russian',
+        'eng+deu': 'English and German', 'eng+fra': 'English and French',
+        'eng+spa': 'English and Spanish', 'eng+por': 'English and Portuguese',
+        'chi_sim': 'Simplified Chinese', 'chi_tra': 'Traditional Chinese',
+        'jpn': 'Japanese', 'kor': 'Korean', 'ara': 'Arabic', 'hin': 'Hindi',
+        'rus': 'Russian', 'deu': 'German', 'fra': 'French', 'spa': 'Spanish',
+        'por': 'Portuguese', 'ita': 'Italian',
+      };
+      const langLabel = langNames[lang] || lang;
+      const base64 = await blobToBase64(blob);
+      const mimeType = blob.type || 'image/png';
+
+      const body = {
+        contents: [{
+          parts: [
+            { text: `Extract ALL text from this image. The text may be in ${langLabel}. Output ONLY the extracted text, preserving layout and line breaks. Do not add any commentary.` },
+            { inline_data: { mime_type: mimeType, data: base64.split(',')[1] } }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+        }
+      };
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message || 'Gemini API error');
+      }
+
+      if (!data.candidates || data.candidates.length === 0) {
+        throw new Error('No response from AI');
+      }
+
+      const parts = data.candidates[0].content?.parts;
+      if (!parts || parts.length === 0) {
+        throw new Error('Empty AI response');
+      }
+
+      return parts.map(p => p.text || '').join('\n');
+    }
+
+    function renderHeader() {
+      const headerActions = document.getElementById('headerActions');
+      const session = getSession();
+
+      if (session) {
+        const badge = isAiAvailable()
+          ? '<span class="ocr-badge ai">AI OCR</span>'
+          : '<span class="ocr-badge basic">Basic</span>';
+
+        headerActions.innerHTML = `
+          <div class="user-info">
+            <span class="username">${session.username}</span>
+            ${badge}
+          </div>
+          <button class="auth-btn" id="logoutBtn">Log Out</button>
+          ${session.role === 'admin' ? '<button class="auth-btn admin-btn" id="adminBtn">Admin</button>' : ''}
+        `;
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+          clearSession();
+          renderHeader();
+        });
+
+        const adminBtn = document.getElementById('adminBtn');
+        if (adminBtn) {
+          adminBtn.addEventListener('click', openAdminPanel);
+        }
+      } else {
+        headerActions.innerHTML = '<button class="auth-btn" id="loginOpenBtn">Log In</button>';
+        document.getElementById('loginOpenBtn').addEventListener('click', () => {
+          document.getElementById('loginOverlay').classList.add('active');
+          document.getElementById('loginUser').focus();
+        });
+      }
+    }
+
+    document.getElementById('loginCancel').addEventListener('click', () => {
+      document.getElementById('loginOverlay').classList.remove('active');
+      document.getElementById('loginError').textContent = '';
+    });
+
+    document.getElementById('loginOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('active');
+        document.getElementById('loginError').textContent = '';
+      }
+    });
+
+    document.getElementById('loginSubmit').addEventListener('click', () => {
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value;
+      const users = getUsers();
+      const user = users.find(u => u.username === username && u.password === password);
+
+      if (!user) {
+        document.getElementById('loginError').textContent = 'Invalid username or password';
+        return;
+      }
+
+      setSession({ username: user.username, role: user.role });
+      document.getElementById('loginOverlay').classList.remove('active');
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginError').textContent = '';
+      renderHeader();
+    });
+
+    document.getElementById('loginPass').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginSubmit').click();
+    });
+
+    function openAdminPanel() {
+      renderUsersTable();
+      document.getElementById('apiKeyInput').value = getApiKey();
+      document.getElementById('apiSavedMsg').textContent = '';
+      document.getElementById('addUserError').textContent = '';
+      document.getElementById('adminOverlay').classList.add('active');
+    }
+
+    document.getElementById('adminClose').addEventListener('click', () => {
+      document.getElementById('adminOverlay').classList.remove('active');
+    });
+
+    document.getElementById('adminOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        e.currentTarget.classList.remove('active');
+      }
+    });
+
+    function renderUsersTable() {
+      const users = getUsers();
+      const tbody = document.getElementById('usersTableBody');
+      const session = getSession();
+
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td>${u.username}</td>
+          <td><span class="role-badge ${u.role}">${u.role}</span></td>
+          <td>${u.username === session.username ? '<span style="color:#555;font-size:0.75rem;">current</span>' : `<button class="btn-del btn-sm" data-user="${u.username}">Delete</button>`}</td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('.btn-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const username = btn.dataset.user;
+          let users = getUsers();
+          users = users.filter(u => u.username !== username);
+          saveUsers(users);
+          renderUsersTable();
+        });
+      });
+    }
+
+    document.getElementById('addUserBtn').addEventListener('click', () => {
+      const username = document.getElementById('newUser').value.trim();
+      const password = document.getElementById('newPass').value;
+      const role = document.getElementById('newRole').value;
+
+      if (!username || !password) {
+        document.getElementById('addUserError').textContent = 'Username and password are required';
+        return;
+      }
+
+      const users = getUsers();
+      if (users.find(u => u.username === username)) {
+        document.getElementById('addUserError').textContent = 'Username already exists';
+        return;
+      }
+
+      users.push({ username, password, role });
+      saveUsers(users);
+      document.getElementById('newUser').value = '';
+      document.getElementById('newPass').value = '';
+      document.getElementById('addUserError').textContent = '';
+      renderUsersTable();
+    });
+
+    document.getElementById('saveApiKeyBtn').addEventListener('click', () => {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem(API_KEY_STORE, key);
+      } else {
+        localStorage.removeItem(API_KEY_STORE);
+      }
+      document.getElementById('apiSavedMsg').textContent = 'API key saved!';
+      setTimeout(() => { document.getElementById('apiSavedMsg').textContent = ''; }, 2000);
+      renderHeader();
+    });
+
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const placeholder = document.getElementById('placeholder');
@@ -764,7 +1319,7 @@
       });
     }
 
-    function fixConfusions(text) {
+function fixConfusions(text) {
       return text.replace(/l(?=\d{2})/g, '1')
         .replace(/O(?=\d{2})/g, '0')
         .replace(/S(?=\d{2})/g, '5')
@@ -787,12 +1342,86 @@
         .replace(/\u00F7/g, '/');
     }
 
+    async function extractWithTesseract(imgBlob, lang, loggerFn) {
+      const options = {
+        lang: lang,
+        logger: loggerFn
+      };
+      const result = await Tesseract.recognize(imgBlob, lang, options);
+      return result.data.text.trim();
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function extractWithAI(blob, lang) {
+      const apiKey = getApiKey();
+      const langNames = {
+        'eng': 'English', 'eng+chi_sim': 'English and Simplified Chinese',
+        'eng+chi_tra': 'English and Traditional Chinese', 'eng+jpn': 'English and Japanese',
+        'eng+kor': 'English and Korean', 'eng+ara': 'English and Arabic',
+        'eng+hin': 'English and Hindi', 'eng+rus': 'English and Russian',
+        'eng+deu': 'English and German', 'eng+fra': 'English and French',
+        'eng+spa': 'English and Spanish', 'eng+por': 'English and Portuguese',
+        'chi_sim': 'Simplified Chinese', 'chi_tra': 'Traditional Chinese',
+        'jpn': 'Japanese', 'kor': 'Korean', 'ara': 'Arabic', 'hin': 'Hindi',
+        'rus': 'Russian', 'deu': 'German', 'fra': 'French', 'spa': 'Spanish',
+        'por': 'Portuguese', 'ita': 'Italian',
+      };
+      const langLabel = langNames[lang] || lang;
+      const base64 = await blobToBase64(blob);
+      const mimeType = blob.type || 'image/png';
+
+      const body = {
+        contents: [{
+          parts: [
+            { text: `Extract ALL text from this image. The text may be in ${langLabel}. Output ONLY the extracted text, preserving layout and line breaks. Do not add any commentary.` },
+            { inline_data: { mime_type: mimeType, data: base64.split(',')[1] } }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 8192,
+        }
+      };
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message || 'Gemini API error');
+      }
+
+      if (!data.candidates || data.candidates.length === 0) {
+        throw new Error('No response from AI');
+      }
+
+      const parts = data.candidates[0].content?.parts;
+      if (!parts || parts.length === 0) {
+        throw new Error('Empty AI response');
+      }
+
+      return parts.map(p => p.text || '').join('\n');
+    }
+
     extractBtn.addEventListener('click', () => {
       if (!currentFile) return;
       extractTextFromBlob(currentFile);
     });
 
-    async function extractTextFromBlob(imgBlob) {
+    async function extractTextFromBlob(blob) {
+      let imgBlob = blob;
       progressBar.style.display = 'block';
       progressFill.style.width = '0%';
       progressLabel.textContent = 'Initializing OCR engine...';
@@ -805,24 +1434,39 @@
       try {
         const lang = ocrLang.value;
         const isHW = handwritingCheck.checked;
-        progressLabel.textContent = 'Preprocessing image...';
+        let text = '';
 
-        const processedBlob = await preprocessBlob(imgBlob, isHW ? 'handwriting' : 'normal');
-        progressLabel.textContent = 'Recognizing text...';
-
-        const options = {
-          lang: lang,
-          logger: (m) => {
+        if (isAiAvailable()) {
+          progressLabel.textContent = 'Using AI (Gemini)...';
+          progressFill.style.width = '50%';
+          try {
+            text = await extractWithAI(imgBlob, lang);
+            progressFill.style.width = '100%';
+          } catch (aiErr) {
+            progressLabel.textContent = 'AI failed, falling back to local OCR...';
+            progressFill.style.width = '0%';
+            const processedBlob = await preprocessBlob(imgBlob, isHW ? 'handwriting' : 'normal');
+            progressLabel.textContent = 'Recognizing text...';
+            const loggerFn = (m) => {
+              if (m.status === 'recognizing text') {
+                progressFill.style.width = Math.round(m.progress * 100) + '%';
+                progressLabel.textContent = `Recognizing text... ${Math.round(m.progress * 100)}%`;
+              }
+            };
+            text = await extractWithTesseract(processedBlob, lang, loggerFn);
+          }
+        } else {
+          const processedBlob = await preprocessBlob(imgBlob, isHW ? 'handwriting' : 'normal');
+          progressLabel.textContent = 'Recognizing text...';
+          const loggerFn = (m) => {
             if (m.status === 'recognizing text') {
               progressFill.style.width = Math.round(m.progress * 100) + '%';
               progressLabel.textContent = `Recognizing text... ${Math.round(m.progress * 100)}%`;
             }
-          }
-        };
+          };
+          text = await extractWithTesseract(processedBlob, lang, loggerFn);
+        }
 
-        const result = await Tesseract.recognize(processedBlob, lang, options);
-
-        let text = result.data.text.trim();
         if (symbolsCheck.checked) {
           text = fixConfusions(text);
         }
@@ -956,6 +1600,8 @@
         }, 2000);
       }
     });
+
+    renderHeader();
   </script>
 </body>
 </html>
